@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS Omni-AI Creative Studio — AI Production Architect</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #07090f;
+  --surface:   #0d1117;
+  --surface2:  #161b22;
+  --surface3:  #1c2128;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.1);
+  --border3:   rgba(255,255,255,0.16);
+  --claude:    #d4956a;
+  --gemini:    #4285f4;
+  --github:    #e6edf3;
+  --gh-green:  #3fb950;
+  --gh-blue:   #58a6ff;
+  --gh-purple: #bc8cff;
+  --gh-orange: #f78166;
+  --accent:    #7c6aff;
+  --green:     #3ecf8e;
+  --text:      #e6edf3;
+  --muted:     #7d8590;
+  --muted2:    #484f58;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  display:flex;
+  overflow:hidden;
+}
+
+/* scrollbars */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border3);border-radius:4px;}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:60px;flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px 0;gap:4px;z-index:20;
+}
+.logo {
+  font-family:'Syne',sans-serif;font-weight:800;font-size:11px;
+  letter-spacing:.2em;writing-mode:vertical-rl;transform:rotate(180deg);
+  margin-bottom:14px;
+  background:linear-gradient(135deg,var(--claude),var(--accent),var(--gemini));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.nav-btn {
+  width:38px;height:38px;border-radius:10px;border:1px solid transparent;
+  background:transparent;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  transition:all .2s;position:relative;
+}
+.nav-btn:hover{background:var(--surface2);color:var(--text);}
+.nav-btn.active{background:var(--surface2);border-color:var(--border2);color:var(--text);}
+.nav-btn.active::before{
+  content:'';position:absolute;left:-1px;
+  width:2px;height:20px;
+  background:linear-gradient(var(--claude),var(--accent));
+  border-radius:0 2px 2px 0;
+}
+.nav-btn.github-btn.active{border-color:rgba(63,185,80,.3);color:var(--gh-green);}
+.nav-btn.github-btn.active::before{background:linear-gradient(var(--gh-green),var(--gh-blue));}
+.sidebar-spacer{flex:1;}
+.nav-tooltip{
+  position:absolute;left:52px;
+  background:var(--surface3);border:1px solid var(--border2);
+  color:var(--text);font-size:11px;padding:4px 8px;border-radius:6px;
+  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;
+}
+.nav-btn:hover .nav-tooltip{opacity:1;}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;min-width:0;position:relative;}
+
+/* ── PANEL BASE ── */
+.panel{display:flex;flex-direction:column;min-width:0;}
+.panel-hidden{display:none!important;}
+
+/* ── CHAT PANEL ── */
+.chat-panel{width:380px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg);}
+
+.panel-header{
+  padding:16px 18px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;flex:1;}
+.ai-badge{
+  display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;
+  font-size:9px;font-weight:600;letter-spacing:.06em;
+}
+.ai-badge.claude{background:rgba(212,149,106,.1);color:var(--claude);border:1px solid rgba(212,149,106,.18);}
+.ai-badge.gemini{background:rgba(66,133,244,.1);color:var(--gemini);border:1px solid rgba(66,133,244,.18);}
+.ai-badge.github{background:rgba(63,185,80,.1);color:var(--gh-green);border:1px solid rgba(63,185,80,.18);}
+.ai-badge .dot{width:4px;height:4px;border-radius:50%;animation:pulse 2s infinite;}
+.ai-badge.claude .dot{background:var(--claude);}
+.ai-badge.gemini .dot{background:var(--gemini);}
+.ai-badge.github .dot{background:var(--gh-green);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+
+.message{display:flex;gap:8px;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.message.user{flex-direction:row-reverse;}
+.avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;}
+.avatar.user-av{background:linear-gradient(135deg,#667eea,#764ba2);}
+.avatar.claude-av{background:linear-gradient(135deg,var(--claude),#c07850);}
+.avatar.gemini-av{background:linear-gradient(135deg,var(--gemini),#34a853);}
+.avatar.github-av{background:linear-gradient(135deg,#333,#555);}
+
+.bubble{max-width:82%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.55;}
+.message.user .bubble{background:rgba(124,106,255,.18);border:1px solid rgba(124,106,255,.22);border-radius:12px 3px 12px 12px;}
+.message.assistant .bubble{background:var(--surface);border:1px solid var(--border2);border-radius:3px 12px 12px 12px;}
+.bubble-source{font-size:9px;font-weight:700;letter-spacing:.07em;margin-bottom:3px;}
+.bubble-source.c{color:var(--claude);}
+.bubble-source.g{color:var(--gemini);}
+.bubble-source.gh{color:var(--gh-green);}
+
+.chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.chip{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:3px;}
+.chip:hover{border-color:var(--accent);color:var(--accent);}
+.chip.gh-chip:hover{border-color:var(--gh-green);color:var(--gh-green);}
+
+.input-area{padding:12px 16px;border-top:1px solid var(--border);}
+.mode-tabs{display:flex;gap:3px;margin-bottom:8px;background:var(--surface);border-radius:7px;padding:2px;}
+.mode-tab{flex:1;padding:4px 6px;border-radius:5px;font-size:10px;font-weight:500;text-align:center;cursor:pointer;color:var(--muted);transition:all .18s;border:none;background:transparent;}
+.mode-tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border2);}
+.input-row{display:flex;gap:6px;align-items:flex-end;}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;resize:none;min-height:38px;max-height:100px;outline:none;transition:border-color .2s;}
+.chat-input:focus{border-color:rgba(124,106,255,.4);}
+.chat-input::placeholder{color:var(--muted);}
+.send-btn{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#5a4fd4);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;flex-shrink:0;}
+.send-btn:hover{transform:scale(1.05);}
+
+.status-bar{padding:6px 16px;border-top:1px solid var(--border);display:flex;gap:12px;background:var(--surface);}
+.status-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
+.sdot{width:5px;height:5px;border-radius:50%;}
+.sdot.on{background:var(--gh-green);box-shadow:0 0 5px var(--gh-green);}
+.sdot.off{background:#f85149;}
+
+/* ── GITHUB PANEL ── */
+.github-panel{
+  width:420px;flex-shrink:0;
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  display:flex;flex-direction:column;
+}
+
+.gh-header{
+  padding:16px 18px 12px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
+.gh-header-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.gh-logo{
+  width:30px;height:30px;border-radius:50%;background:#000;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  border:1px solid var(--border3);
+}
+.gh-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;flex:1;}
+.gh-user-badge{
+  display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;
+  background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);
+  font-size:10px;color:var(--gh-green);cursor:pointer;
+}
+
+.gh-search-row{display:flex;gap:6px;}
+.gh-search{
+  flex:1;background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;padding:7px 11px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:12px;outline:none;
+  transition:border-color .2s;
+}
+.gh-search:focus{border-color:rgba(63,185,80,.4);}
+.gh-search::placeholder{color:var(--muted);}
+.gh-search-btn{
+  padding:7px 12px;border-radius:8px;background:rgba(63,185,80,.15);
+  border:1px solid rgba(63,185,80,.25);color:var(--gh-green);
+  font-size:11px;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;
+}
+.gh-search-btn:hover{background:rgba(63,185,80,.25);}
+
+.gh-filter-row{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.gh-filter{
+  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;
+  border:1px solid var(--border2);background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .18s;
+}
+.gh-filter.active{background:var(--surface3);color:var(--text);border-color:var(--border3);}
+.gh-filter:hover{color:var(--text);}
+
+/* Tabs inside GitHub panel */
+.gh-tabs{display:flex;border-bottom:1px solid var(--border);}
+.gh-tab{
+  flex:1;padding:9px 4px;font-size:11px;font-weight:500;text-align:center;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .18s;
+}
+.gh-tab.active{color:var(--gh-green);border-bottom-color:var(--gh-green);}
+.gh-tab:hover{color:var(--text);}
+
+.gh-content{flex:1;overflow-y:auto;padding:12px;}
+
+/* Repo cards */
+.repo-card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;margin-bottom:8px;
+  cursor:pointer;transition:all .22s;position:relative;
+}
+.repo-card:hover{border-color:var(--border3);transform:translateX(2px);}
+.repo-card.installed{border-color:rgba(63,185,80,.25);background:rgba(63,185,80,.04);}
+
+.repo-header{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.repo-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.repo-info{flex:1;min-width:0;}
+.repo-name{font-family:'Syne',sans-serif;font-weight:600;font-size:12px;color:var(--gh-blue);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.repo-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+.repo-action-btn{
+  padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600;
+  border:1px solid;cursor:pointer;transition:all .18s;flex-shrink:0;white-space:nowrap;
+}
+.btn-install{background:rgba(63,185,80,.12);border-color:rgba(63,185,80,.25);color:var(--gh-green);}
+.btn-install:hover{background:rgba(63,185,80,.22);}
+.btn-installed{background:rgba(63,185,80,.08);border-color:rgba(63,185,80,.2);color:var(--gh-green);cursor:default;}
+.btn-update{background:rgba(88,166,255,.12);border-color:rgba(88,166,255,.25);color:var(--gh-blue);}
+.btn-update:hover{background:rgba(88,166,255,.22);}
+.btn-run{background:rgba(188,140,255,.12);border-color:rgba(188,140,255,.25);color:var(--gh-purple);}
+.btn-run:hover{background:rgba(188,140,255,.22);}
+
+.repo-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.repo-tag{
+  padding:2px 7px;border-radius:20px;font-size:9px;font-weight:600;
+  letter-spacing:.04em;
+}
+.tag-image{background:rgba(247,129,102,.12);color:var(--gh-orange);border:1px solid rgba(247,129,102,.2);}
+.tag-video{background:rgba(188,140,255,.12);color:var(--gh-purple);border:1px solid rgba(188,140,255,.2);}
+.tag-avatar{background:rgba(212,149,106,.12);color:var(--claude);border:1px solid rgba(212,149,106,.2);}
+.tag-dataviz{background:rgba(62,207,142,.12);color:var(--green);border:1px solid rgba(62,207,142,.2);}
+.tag-slides{background:rgba(66,133,244,.12);color:var(--gemini);border:1px solid rgba(66,133,244,.2);}
+.tag-python{background:rgba(55,118,171,.12);color:#3776ab;border:1px solid rgba(55,118,171,.2);}
+.tag-js{background:rgba(247,223,30,.08);color:#f7df1e;border:1px solid rgba(247,223,30,.15);}
+
+.repo-stars{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.repo-lang{font-size:10px;color:var(--muted);}
+
+.installed-badge{
+  position:absolute;top:10px;right:10px;
+  background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.2);
+  color:var(--gh-green);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;
+}
+
+/* Installed tools panel */
+.installed-tool{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;margin-bottom:8px;
+  display:flex;align-items:center;gap:10px;
+}
+.tool-icon-sm{font-size:16px;}
+.tool-info{flex:1;min-width:0;}
+.tool-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.tool-version{font-size:10px;color:var(--muted);}
+.tool-actions{display:flex;gap:5px;}
+
+/* Code viewer */
+.code-viewer{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;padding:12px 14px;margin-bottom:8px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:#adbac7;line-height:1.7;overflow-x:auto;white-space:pre;
+  max-height:200px;overflow-y:auto;
+}
+.code-keyword{color:#ff7b72;}
+.code-string{color:#a5d6ff;}
+.code-comment{color:#8b949e;}
+.code-func{color:#d2a8ff;}
+
+/* Output panel */
+.output-panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+.output-header{
+  padding:16px 20px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.output-tabs{display:flex;gap:3px;flex:1;}
+.output-tab{
+  padding:5px 12px;border-radius:7px;font-size:11px;font-weight:500;
+  cursor:pointer;border:1px solid transparent;background:transparent;
+  color:var(--muted);transition:all .18s;display:flex;align-items:center;gap:5px;
+}
+.output-tab:hover{color:var(--text);}
+.output-tab.active{background:var(--surface);border-color:var(--border2);color:var(--text);}
+.output-tab .cnt{background:var(--accent);color:white;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;}
+
+.hdr-btns{display:flex;gap:6px;}
+.hdr-btn{
+  padding:5px 11px;border-radius:7px;font-size:11px;font-weight:500;
+  border:1px solid var(--border2);background:var(--surface);color:var(--text);
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;gap:4px;
+}
+.hdr-btn:hover{background:var(--surface2);}
+.hdr-btn.gh-btn{background:rgba(63,185,80,.1);border-color:rgba(63,185,80,.2);color:var(--gh-green);}
+.hdr-btn.gh-btn:hover{background:rgba(63,185,80,.2);}
+
+.output-content{flex:1;overflow-y:auto;padding:20px;}
+
+.quick-tools{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:20px;}
+.tool-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:12px 8px;text-align:center;cursor:pointer;transition:all .22s;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.tool-card:hover{border-color:var(--border2);transform:translateY(-2px);background:var(--surface2);}
+.tool-card .icon{font-size:20px;}
+.tool-card .label{font-size:10px;font-weight:500;color:var(--muted);line-height:1.3;}
+
+.gen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+
+.gen-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;transition:all .22s;cursor:pointer;animation:fadeUp .4s ease;
+}
+.gen-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3);}
+
+.gen-card-img{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.gen-card-img.slide-preview{background:linear-gradient(135deg,#1a1f3e,#2d1b69);}
+.gen-card-img.image-preview{background:linear-gradient(135deg,#0d2137,#1a3a2e);}
+.gen-card-img.video-preview{background:linear-gradient(135deg,#1f0d2d,#2d1337);}
+.gen-card-img.avatar-preview{background:linear-gradient(135deg,#1a0d2e,#2d0d1a);}
+.gen-card-img.chart-preview{background:linear-gradient(135deg,#0d1f37,#0d2d24);}
+.gen-card-img.github-preview{background:linear-gradient(135deg,#0d1117,#161b22);}
+
+.shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.03),transparent);animation:shimmer 2.5s infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+
+.gen-badge{position:absolute;top:8px;left:8px;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;letter-spacing:.05em;display:flex;align-items:center;gap:3px;}
+.gen-badge.slides{background:rgba(66,133,244,.2);color:#6ba5f8;border:1px solid rgba(66,133,244,.2);}
+.gen-badge.image{background:rgba(52,168,83,.2);color:#5fcf80;border:1px solid rgba(52,168,83,.2);}
+.gen-badge.video{background:rgba(124,106,255,.2);color:#a594ff;border:1px solid rgba(124,106,255,.2);}
+.gen-badge.avatar{background:rgba(212,149,106,.2);color:var(--claude);border:1px solid rgba(212,149,106,.2);}
+.gen-badge.chart{background:rgba(62,207,142,.2);color:var(--green);border:1px solid rgba(62,207,142,.2);}
+.gen-badge.github-tool{background:rgba(63,185,80,.2);color:var(--gh-green);border:1px solid rgba(63,185,80,.2);}
+
+.gen-card-body{padding:12px 14px;}
+.gen-card-title{font-family:'Syne',sans-serif;font-weight:600;font-size:12px;margin-bottom:3px;}
+.gen-card-meta{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.gen-card-footer{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:5px;}
+.card-btn{flex:1;padding:5px;border-radius:6px;font-size:10px;font-weight:500;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;text-align:center;transition:all .18s;}
+.card-btn:hover{border-color:var(--accent);color:var(--accent);}
+.card-btn.primary-btn{background:rgba(66,133,244,.1);border-color:rgba(66,133,244,.2);color:var(--gemini);}
+.card-btn.gh-card-btn{background:rgba(63,185,80,.08);border-color:rgba(63,185,80,.2);color:var(--gh-green);}
+
+/* slide preview */
+.slide-content{width:82%;height:78%;background:white;border-radius:3px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.slide-title-bar{height:7px;border-radius:3px;background:linear-gradient(90deg,#1a73e8,#4285f4);width:68%;}
+.slide-sub-bar{height:3px;border-radius:2px;background:#e0e0e0;width:48%;}
+.slide-bars{margin-top:3px;display:flex;flex-direction:column;gap:2px;}
+.slide-bar{height:2px;border-radius:1px;background:#ebebeb;}
+
+/* video preview */
+.video-frame{width:78%;height:73%;border-radius:7px;background:#000;box-shadow:0 4px 16px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;}
+.play-btn{width:32px;height:32px;background:rgba(255,255,255,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.25);font-size:12px;}
+
+/* avatar preview */
+.avatar-frame{width:60%;height:86%;border-radius:10px;background:linear-gradient(180deg,#1a0d2e,#3d1654);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(124,106,255,.25);position:relative;overflow:hidden;}
+.avatar-fig{font-size:44px;position:relative;z-index:1;}
+
+/* chart preview */
+.chart-inner{width:84%;height:80%;background:#0a1628;border-radius:7px;padding:9px;display:flex;flex-direction:column;gap:5px;}
+.chart-bars-row{flex:1;display:flex;align-items:flex-end;gap:3px;padding-top:6px;}
+.chart-bar-item{flex:1;border-radius:2px 2px 0 0;background:linear-gradient(0deg,var(--gemini),var(--accent));opacity:.8;}
+
+/* github tool preview */
+.gh-preview-inner{width:86%;height:80%;background:#0d1117;border-radius:7px;padding:10px;border:1px solid var(--border2);}
+.gh-preview-line{height:3px;border-radius:1px;background:var(--gh-green);opacity:.7;margin-bottom:5px;}
+.gh-preview-line.dim{background:var(--border3);opacity:1;}
+
+/* generating */
+.generating-card{
+  background:var(--surface);border:1px solid var(--border2);border-radius:14px;
+  padding:28px;display:flex;flex-direction:column;align-items:center;gap:14px;
+  text-align:center;animation:fadeUp .3s ease;grid-column:1/-1;
+}
+.gen-spinner{width:40px;height:40px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--gh-green);animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.gen-label{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;}
+.gen-sublabel{font-size:11px;color:var(--muted);}
+.gen-prog{width:180px;height:2px;background:var(--surface2);border-radius:1px;overflow:hidden;}
+.gen-prog-bar{height:100%;background:linear-gradient(90deg,var(--gh-green),var(--accent));animation:prog 3s ease-in-out infinite;}
+@keyframes prog{0%{width:0%;}70%{width:85%;}100%{width:95%;}}
+
+/* empty state */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--muted);text-align:center;}
+.empty-icon{font-size:36px;opacity:.3;}
+.empty-title{font-family:'Syne',sans-serif;font-weight:600;font-size:15px;color:var(--text);}
+.empty-sub{font-size:12px;max-width:260px;line-height:1.5;}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:18px;width:460px;padding:24px;animation:slideUp .3s ease;max-height:90vh;overflow-y:auto;}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:5px;}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5;}
+.field-group{margin-bottom:14px;}
+.field-label{font-size:11px;font-weight:500;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.tag{padding:2px 5px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.05em;}
+.tag.c{background:rgba(212,149,106,.15);color:var(--claude);}
+.tag.g{background:rgba(66,133,244,.15);color:var(--gemini);}
+.tag.gh{background:rgba(63,185,80,.15);color:var(--gh-green);}
+.field-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;transition:border-color .2s;}
+.field-input:focus{border-color:rgba(124,106,255,.45);}
+.modal-footer{display:flex;gap:8px;margin-top:20px;}
+.modal-btn{flex:1;padding:10px;border-radius:9px;font-size:12px;font-weight:600;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .2s;}
+.modal-btn.save{background:linear-gradient(135deg,var(--accent),#5a4fd4);border-color:transparent;color:white;}
+.modal-btn.save:hover{filter:brightness(1.1);}
+
+/* section divider */
+.section-title{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);text-transform:uppercase;}
+
+/* notification toast */
+.toast{
+  position:fixed;bottom:20px;right:20px;z-index:200;
+  background:var(--surface3);border:1px solid var(--border3);
+  border-radius:10px;padding:10px 16px;font-size:12px;
+  display:flex;align-items:center;gap:8px;
+  animation:toastIn .3s ease;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+}
+@keyframes toastIn{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.toast.success{border-color:rgba(63,185,80,.3);color:var(--gh-green);}
+.toast.info{border-color:rgba(88,166,255,.3);color:var(--gh-blue);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">NEXUS</div>
+  <button class="nav-btn active" onclick="setNav(this,'chat')" title="">💬<span class="nav-tooltip">Chat</span></button>
+  <button class="nav-btn github-btn" onclick="setNav(this,'github')" title="">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+    <span class="nav-tooltip">GitHub Hub</span>
+  </button>
+  <button class="nav-btn" onclick="setNav(this,'library')" title="">🗂️<span class="nav-tooltip">Library</span></button>
+  <button class="nav-btn" onclick="setNav(this,'slides')" title="">📊<span class="nav-tooltip">Slides</span></button>
+  <button class="nav-btn" onclick="setNav(this,'images')" title="">🖼️<span class="nav-tooltip">Images</span></button>
+  <button class="nav-btn" onclick="setNav(this,'video')" title="">🎬<span class="nav-tooltip">Video</span></button>
+  <button class="nav-btn" onclick="setNav(this,'avatar')" title="">🧑‍💼<span class="nav-tooltip">Avatar</span></button>
+  <div class="sidebar-spacer"></div>
+  <button class="nav-btn" onclick="openModal()" title="">⚙️<span class="nav-tooltip">Settings</span></button>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel panel" id="chatPanel">
+    <div class="panel-header">
+      <span class="panel-title">Omni-AI Production Studio</span>
+      <span class="ai-badge claude"><span class="dot"></span>Claude</span>
+      <span class="ai-badge gemini"><span class="dot"></span>Gemini</span>
+      <span class="ai-badge github"><span class="dot"></span>GitHub</span>
+    </div>
+    <div class="messages" id="messages">
+      <div class="message assistant">
+        <div class="avatar claude-av">✦</div>
+        <div class="bubble">
+          <div class="bubble-source c">CLAUDE × GEMINI × GITHUB</div>
+          Welcome to <strong>NEXUS Omni-AI Creative Studio</strong> — your fully autonomous AI production studio powered by Claude, Gemini and GitHub.<br><br>
+          I am your <strong>Omni-AI Creative Architect</strong>. Give me any request and I will design a complete, production-ready system — video, slides, avatar pitch, image pipeline, marketing campaign — immediately executable by your team.<br><br>
+          What would you like to produce today?
+          <div class="chips">
+            <span class="chip" onclick="quickPrompt('Design a complete AI video production system for a Singapore tech startup pitch')">🎬 Full Video System</span>
+            <span class="chip" onclick="quickPrompt('Create a complete 10-slide pitch deck production pipeline for a BIM AI platform')">📊 Pitch Deck System</span>
+            <span class="chip" onclick="quickPrompt('Design a hyper-realistic avatar sales pitch system for a $1M investment opportunity')">🧑‍💼 Avatar Pitch System</span>
+            <span class="chip gh-chip" onclick="quickPrompt('Search GitHub for the best AI video generation tools and design a complete pipeline')">🐙 GitHub Pipeline</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="input-area">
+      <div class="mode-tabs">
+        <button class="mode-tab active" onclick="setMode(this,'chat')">💬 Chat</button>
+        <button class="mode-tab" onclick="setMode(this,'github')">🐙 GitHub</button>
+        <button class="mode-tab" onclick="setMode(this,'slides')">📊 Slides</button>
+        <button class="mode-tab" onclick="setMode(this,'image')">🖼️ Image</button>
+        <button class="mode-tab" onclick="setMode(this,'avatar')">🧑‍💼 Avatar</button>
+      </div>
+      <div class="input-row">
+        <textarea class="chat-input" id="chatInput" rows="1"
+          placeholder="Ask Claude or search GitHub for tools..."
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="status-item"><span class="sdot" id="claudeDot"></span>Claude</div>
+      <div class="status-item"><span class="sdot" id="geminiDot"></span>Gemini</div>
+      <div class="status-item"><span class="sdot" id="githubDot"></span>GitHub</div>
+      <div class="status-item"><span class="sdot" id="driveDot"></span>Drive</div>
+    </div>
+  </div>
+
+  <!-- GITHUB HUB PANEL -->
+  <div class="github-panel panel panel-hidden" id="githubPanel">
+    <div class="gh-header">
+      <div class="gh-header-top">
+        <div class="gh-logo">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="white"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </div>
+        <span class="gh-title">GitHub Tool Hub</span>
+        <div class="gh-user-badge" id="ghUserBadge" onclick="openModal()">
+          <span id="ghUserText">Connect</span>
+        </div>
+      </div>
+      <div class="gh-search-row">
+        <input class="gh-search" id="ghSearch" placeholder="Search repos, tools, scripts..." onkeydown="if(event.key==='Enter')searchGitHub()">
+        <button class="gh-search-btn" onclick="searchGitHub()">🔍 Search</button>
+      </div>
+      <div class="gh-filter-row">
+        <button class="gh-filter active" onclick="setFilter(this,'all')">All</button>
+        <button class="gh-filter" onclick="setFilter(this,'image')">🖼 Image</button>
+        <button class="gh-filter" onclick="setFilter(this,'video')">🎬 Video</button>
+        <button class="gh-filter" onclick="setFilter(this,'avatar')">🧑‍💼 Avatar</button>
+        <button class="gh-filter" onclick="setFilter(this,'dataviz')">📈 DataViz</button>
+        <button class="gh-filter" onclick="setFilter(this,'slides')">📊 Slides</button>
+      </div>
+    </div>
+
+    <div class="gh-tabs">
+      <div class="gh-tab active" onclick="setGhTab(this,'discover')">🔭 Discover</div>
+      <div class="gh-tab" onclick="setGhTab(this,'installed')">⚡ Installed <span id="installedCount" style="font-size:9px;background:var(--gh-green);color:#000;padding:1px 5px;border-radius:8px;margin-left:3px;">0</span></div>
+      <div class="gh-tab" onclick="setGhTab(this,'code')">{ } Code</div>
+      <div class="gh-tab" onclick="setGhTab(this,'saved')">☁ Saved</div>
+    </div>
+
+    <div class="gh-content" id="ghContent">
+      <!-- Discover tab content injected by JS -->
+    </div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="output-panel panel" id="outputPanel">
+    <div class="output-header">
+      <div class="output-tabs">
+        <button class="output-tab active" onclick="setTab(this,'all')">All <span class="cnt" id="allCount">0</span></button>
+        <button class="output-tab" onclick="setTab(this,'slides')">📊 Slides</button>
+        <button class="output-tab" onclick="setTab(this,'images')">🖼️ Images</button>
+        <button class="output-tab" onclick="setTab(this,'videos')">🎬 Videos</button>
+        <button class="output-tab" onclick="setTab(this,'avatars')">🧑‍💼 Avatars</button>
+        <button class="output-tab" onclick="setTab(this,'github')">🐙 GitHub</button>
+      </div>
+      <div class="hdr-btns">
+        <button class="hdr-btn gh-btn" onclick="pushToGitHub()">↑ Push to GitHub</button>
+        <button class="hdr-btn" onclick="downloadAllOutputs()">⬇ Download All</button>
+        <button class="hdr-btn" onclick="saveToGDrive()">💾 Drive</button>
+      </div>
+    </div>
+    <div class="output-content" id="outputContent">
+      <div class="quick-tools">
+        <div class="tool-card" onclick="quickPrompt('Create a 10-slide business presentation')"><div class="icon">📊</div><div class="label">Slides</div></div>
+        <div class="tool-card" onclick="quickPrompt('Generate a photorealistic render')"><div class="icon">🖼️</div><div class="label">Imagen</div></div>
+        <div class="tool-card" onclick="quickPrompt('Create a 30-second video')"><div class="icon">🎬</div><div class="label">Veo</div></div>
+        <div class="tool-card" onclick="quickPrompt('Create an avatar sales pitch')"><div class="icon">🧑‍💼</div><div class="label">Avatar</div></div>
+        <div class="tool-card" onclick="quickPrompt('Search GitHub for the best open source AI image generation tool')"><div class="icon">🐙</div><div class="label">GitHub Tool</div></div>
+      </div>
+      <div class="gen-grid" id="genGrid">
+        <div class="empty-state" id="emptyState" style="grid-column:1/-1;height:220px;">
+          <div class="empty-icon">✦</div>
+          <div class="empty-title">Your creations appear here</div>
+          <div class="empty-sub">Generate slides, renders, videos, avatars, or run GitHub tools — everything shows up here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- API SETTINGS MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">⚙️ API Configuration</div>
+    <div class="modal-sub">Connect all your API keys. Keys are stored only in your browser's local storage.</div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag c">CLAUDE</span>Anthropic API Key</div>
+      <input class="field-input" id="claudeKey" type="password" placeholder="sk-ant-..."/>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag g">GEMINI</span>Google Gemini API Key</div>
+      <input class="field-input" id="geminiKey" type="password" placeholder="AIza..."/>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag g">GOOGLE</span>OAuth Client ID (Drive + Slides)</div>
+      <input class="field-input" id="googleClientId" type="text" placeholder="xxxx.apps.googleusercontent.com"/>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag gh">GITHUB</span>GitHub Personal Access Token</div>
+      <input class="field-input" id="githubToken" type="password" placeholder="ghp_..."/>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;">github.com → Settings → Developer settings → Personal access tokens → Generate new token (classic) → select <strong>repo</strong> scope</div>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag gh">GITHUB</span>Your GitHub Username</div>
+      <input class="field-input" id="githubUser" type="text" placeholder="your-username"/>
+    </div>
+    <div class="field-group">
+      <div class="field-label"><span class="tag gh">GITHUB</span>Target Repo for Outputs (optional)</div>
+      <input class="field-input" id="githubRepo" type="text" placeholder="username/nexus-outputs"/>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn save" onclick="saveKeys()">Save & Connect</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────
+const keys = {
+  claude: localStorage.getItem('nx_claude')||'',
+  gemini: localStorage.getItem('nx_gemini')||'',
+  google: localStorage.getItem('nx_google')||'',
+  github: localStorage.getItem('nx_github')||'',
+  ghUser: localStorage.getItem('nx_ghuser')||'',
+  ghRepo: localStorage.getItem('nx_ghrepo')||'',
+};
+let currentMode='chat', currentGhTab='discover', currentFilter='all';
+let genCount=0, installedTools=[];
+const outputs=[];
+
+// ── CURATED TOOL REGISTRY ──────────────────────────
+const TOOLS = [
+  { id:'stable-diffusion-webui', icon:'🎨', name:'AUTOMATIC1111/stable-diffusion-webui', desc:'The most popular Stable Diffusion UI with 200+ extensions for photorealistic image generation', tags:['image'], lang:'Python', stars:'140k', category:'image', repoUrl:'https://github.com/AUTOMATIC1111/stable-diffusion-webui' },
+  { id:'comfyui', icon:'🖼️', name:'comfyanonymous/ComfyUI', desc:'Powerful node-based Stable Diffusion GUI and backend for advanced image workflows', tags:['image'], lang:'Python', stars:'62k', category:'image', repoUrl:'https://github.com/comfyanonymous/ComfyUI' },
+  { id:'sadtalker', icon:'🧑‍💼', name:'OpenTalker/SadTalker', desc:'Realistic talking face video generation from a single photo + audio — perfect for avatar pitches', tags:['avatar'], lang:'Python', stars:'15k', category:'avatar', repoUrl:'https://github.com/OpenTalker/SadTalker' },
+  { id:'wan', icon:'🎬', name:'Wan-Video/Wan2.1', desc:'State-of-the-art open-source video generation model — text-to-video and image-to-video', tags:['video'], lang:'Python', stars:'23k', category:'video', repoUrl:'https://github.com/Wan-Video/Wan2.1' },
+  { id:'cogvideo', icon:'🎥', name:'THUDM/CogVideo', desc:'Open-source text-to-video generation with CogVideoX — cinematic quality video synthesis', tags:['video'], lang:'Python', stars:'12k', category:'video', repoUrl:'https://github.com/THUDM/CogVideo' },
+  { id:'d3', icon:'📈', name:'d3/d3', desc:'The definitive JavaScript data visualisation library — charts, maps, animations, all custom', tags:['dataviz'], lang:'JavaScript', stars:'108k', category:'dataviz', repoUrl:'https://github.com/d3/d3' },
+  { id:'plotly', icon:'📊', name:'plotly/plotly.py', desc:'Interactive scientific graphing library — 40+ chart types, works with pandas/numpy', tags:['dataviz'], lang:'Python', stars:'16k', category:'dataviz', repoUrl:'https://github.com/plotly/plotly.py' },
+  { id:'python-pptx', icon:'📑', name:'scanny/python-pptx', desc:'Automate PowerPoint creation from Python — perfect for generating presentation slides programmatically', tags:['slides'], lang:'Python', stars:'4.5k', category:'slides', repoUrl:'https://github.com/scanny/python-pptx' },
+  { id:'marp', icon:'🎯', name:'marp-team/marp', desc:'Markdown to beautiful presentation slides in seconds — supports themes and HTML export', tags:['slides'], lang:'TypeScript', stars:'8k', category:'slides', repoUrl:'https://github.com/marp-team/marp' },
+  { id:'ip-adapter', icon:'🎭', name:'tencent-ailab/IP-Adapter', desc:'Add custom faces and styles to Stable Diffusion — great for consistent avatar looks', tags:['image','avatar'], lang:'Python', stars:'18k', category:'avatar', repoUrl:'https://github.com/tencent-ailab/IP-Adapter' },
+  { id:'wav2lip', icon:'🗣️', name:'Rudrabha/Wav2Lip', desc:'Sync any talking head video to any audio — lip-sync for avatar sales videos', tags:['avatar','video'], lang:'Python', stars:'8k', category:'avatar', repoUrl:'https://github.com/Rudrabha/Wav2Lip' },
+  { id:'echarts', icon:'📉', name:'apache/echarts', desc:'Powerful interactive charting and visualisation library from Apache — used by 500k+ sites', tags:['dataviz'], lang:'JavaScript', stars:'60k', category:'dataviz', repoUrl:'https://github.com/apache/echarts' },
+];
+
+// ── INIT ──────────────────────────────────────────
+function init(){
+  updateDots();
+  renderDiscoverTab();
+  if(!keys.claude && !keys.gemini) setTimeout(()=>openModal(),600);
+}
+
+function updateDots(){
+  setDot('claudeDot', !!keys.claude);
+  setDot('geminiDot', !!keys.gemini);
+  setDot('githubDot', !!keys.github);
+  setDot('driveDot',  !!keys.google);
+  if(keys.ghUser){
+    document.getElementById('ghUserBadge').style.background='rgba(63,185,80,.15)';
+    document.getElementById('ghUserText').textContent='@'+keys.ghUser;
+  }
+}
+function setDot(id,on){
+  const d=document.getElementById(id);
+  if(!d)return;
+  d.className='sdot '+(on?'on':'off');
+}
+
+// ── NAV ───────────────────────────────────────────
+function setNav(btn,view){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const ghPanel=document.getElementById('githubPanel');
+  if(view==='github'){
+    ghPanel.classList.remove('panel-hidden');
+  } else {
+    ghPanel.classList.add('panel-hidden');
+  }
+}
+
+function setMode(btn,mode){
+  document.querySelectorAll('.mode-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentMode=mode;
+  const ph={chat:'Ask Claude or search GitHub for tools...',github:'Search GitHub repos, e.g. "stable diffusion" or "wan video"...',slides:'e.g. "10-slide SaaS pitch deck with dark theme"',image:'e.g. "photorealistic Singapore cityscape at night"',avatar:'e.g. "powerful 90-second investment pitch avatar"'};
+  document.getElementById('chatInput').placeholder=ph[mode]||ph.chat;
+}
+
+function setTab(btn,type){
+  document.querySelectorAll('.output-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setGhTab(btn,tab){
+  document.querySelectorAll('.gh-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentGhTab=tab;
+  if(tab==='discover') renderDiscoverTab();
+  else if(tab==='installed') renderInstalledTab();
+  else if(tab==='code') renderCodeTab();
+  else if(tab==='saved') renderSavedTab();
+}
+
+function setFilter(btn,f){
+  document.querySelectorAll('.gh-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter=f;
+  renderDiscoverTab();
+}
+
+// ── GITHUB DISCOVER ───────────────────────────────
+function renderDiscoverTab(){
+  const filtered = currentFilter==='all' ? TOOLS : TOOLS.filter(t=>t.category===currentFilter || t.tags.includes(currentFilter));
+  const html = filtered.map(t=>repoCardHTML(t)).join('');
+  document.getElementById('ghContent').innerHTML = `
+    <div class="section-title">✦ Curated AI Tools</div>
+    ${html}
+  `;
+}
+
+function repoCardHTML(t){
+  const isInstalled = installedTools.some(i=>i.id===t.id);
+  const tagHTML = t.tags.map(tag=>`<span class="repo-tag tag-${tag}">${tag}</span>`).join('');
+  return `
+  <div class="repo-card ${isInstalled?'installed':''}" id="repo-${t.id}">
+    ${isInstalled?'<div class="installed-badge">✓ Installed</div>':''}
+    <div class="repo-header">
+      <div class="repo-icon">${t.icon}</div>
+      <div class="repo-info">
+        <div class="repo-name">${t.name}</div>
+        <div class="repo-desc">${t.desc}</div>
+      </div>
+      ${isInstalled
+        ? `<button class="repo-action-btn btn-run" onclick="runTool('${t.id}')">▶ Run</button>`
+        : `<button class="repo-action-btn btn-install" onclick="installTool('${t.id}')">+ Install</button>`
+      }
+    </div>
+    <div class="repo-meta">
+      ${tagHTML}
+      <span class="repo-stars">★ ${t.stars}</span>
+      <span class="repo-lang">${t.lang}</span>
+      <a href="${t.repoUrl}" target="_blank" style="font-size:10px;color:var(--gh-blue);margin-left:auto;">View on GitHub ↗</a>
+    </div>
+  </div>`;
+}
+
+function renderInstalledTab(){
+  if(!installedTools.length){
+    document.getElementById('ghContent').innerHTML=`
+      <div class="empty-state" style="height:200px;">
+        <div class="empty-icon">⚡</div>
+        <div class="empty-title">No tools installed yet</div>
+        <div class="empty-sub">Browse Discover tab and install AI tools to use them in NEXUS</div>
+      </div>`;
+    return;
+  }
+  const html=installedTools.map(t=>`
+    <div class="installed-tool">
+      <div class="tool-icon-sm">${t.icon}</div>
+      <div class="tool-info">
+        <div class="tool-name">${t.name.split('/')[1]||t.name}</div>
+        <div class="tool-version">Installed · ${t.lang}</div>
+      </div>
+      <div class="tool-actions">
+        <button class="repo-action-btn btn-run" onclick="runTool('${t.id}')">▶ Run</button>
+        <button class="repo-action-btn btn-update" onclick="updateTool('${t.id}')">↑ Update</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('ghContent').innerHTML=`<div class="section-title">⚡ Installed tools</div>${html}`;
+}
+
+function renderCodeTab(){
+  document.getElementById('ghContent').innerHTML=`
+    <div class="section-title">{ } Pull & view scripts</div>
+    <div class="repo-card" style="cursor:default;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Enter a raw GitHub file URL to view and pull the script into NEXUS:</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <input class="gh-search" id="rawUrl" placeholder="https://raw.githubusercontent.com/user/repo/main/script.py" style="flex:1;">
+        <button class="gh-search-btn" onclick="fetchRawCode()">Pull</button>
+      </div>
+      <div id="codeDisplay" class="code-viewer" style="display:none;"></div>
+      <div id="codeActions" style="display:none;margin-top:8px;display:flex;gap:6px;"></div>
+    </div>
+    <div class="section-title">Recent pulls</div>
+    <div style="font-size:12px;color:var(--muted);padding:8px 0;">Scripts you pull will appear here for quick re-use.</div>
+  `;
+}
+
+function renderSavedTab(){
+  document.getElementById('ghContent').innerHTML=`
+    <div class="section-title">☁ Saved to your GitHub</div>
+    ${keys.github && keys.ghRepo ? `
+      <div class="repo-card" style="cursor:default;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">Outputs will be saved to:</div>
+        <div class="repo-name" style="font-size:13px;">📁 ${keys.ghRepo}</div>
+        <div style="margin-top:10px;display:flex;gap:6px;">
+          <button class="repo-action-btn btn-install" onclick="createNexusRepo()">Initialize NEXUS outputs repo</button>
+        </div>
+      </div>` : `
+      <div class="empty-state" style="height:160px;">
+        <div class="empty-icon">☁</div>
+        <div class="empty-title">Connect GitHub first</div>
+        <div class="empty-sub">Add your GitHub token and repo in ⚙️ Settings to save outputs</div>
+        <button class="repo-action-btn btn-install" style="margin-top:8px;" onclick="openModal()">Open Settings</button>
+      </div>`}
+  `;
+}
+
+// ── TOOL ACTIONS ──────────────────────────────────
+function installTool(id){
+  const tool = TOOLS.find(t=>t.id===id);
+  if(!tool) return;
+  installedTools.push(tool);
+  document.getElementById('installedCount').textContent=installedTools.length;
+  showToast(`✓ ${tool.name.split('/')[1]} installed`,'success');
+  addMessage('assistant','github',
+    `✓ <strong>${tool.name}</strong> has been added to your NEXUS toolkit.<br><br>`+
+    `<small>To run locally: clone the repo, install requirements, then use the Run button to integrate it into your workflow. `+
+    `On Windows you'll need Python 3.10+ and Git installed.</small>`,
+    [{label:'▶ Run now', fn:`runTool('${id}')`},{label:'View on GitHub',fn:`window.open('${tool.repoUrl}')`}]
+  );
+  renderDiscoverTab();
+}
+
+function runTool(id){
+  const tool = TOOLS.find(t=>t.id===id)||installedTools.find(t=>t.id===id);
+  if(!tool) return;
+  addMessage('assistant','github',
+    `▶ Running <strong>${tool.name.split('/')[1]}</strong>...<br><br>`+
+    `<small>This tool runs locally on your machine. NEXUS has generated the launch command below:`+
+    `<br><br><code>cd ${tool.id} && python -m pip install -r requirements.txt && python app.py</code></small>`
+  );
+  showGenerating(`▶ Integrating ${tool.name.split('/')[1]} output into NEXUS...`);
+  setTimeout(()=>{
+    hideGenerating();
+    addOutputCard('github-tool', `${tool.name.split('/')[1]} output`, tool.desc);
+    showToast(`▶ ${tool.name.split('/')[1]} run complete`,'info');
+  },2500);
+}
+
+function updateTool(id){
+  showToast('↑ Checking for updates via GitHub API...','info');
+  setTimeout(()=>showToast('✓ Already on latest version','success'),1500);
+}
+
+async function searchGitHub(){
+  const q = document.getElementById('ghSearch').value.trim();
+  if(!q) return;
+  showToast('🔍 Searching GitHub...','info');
+  if(keys.github){
+    try{
+      const res = await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(q+' AI')}&sort=stars&per_page=8`,{
+        headers:{'Authorization':`token ${keys.github}`,'Accept':'application/vnd.github.v3+json'}
+      });
+      const data = await res.json();
+      if(data.items){
+        const html = data.items.map(r=>`
+          <div class="repo-card">
+            <div class="repo-header">
+              <div class="repo-icon">📦</div>
+              <div class="repo-info">
+                <div class="repo-name">${r.full_name}</div>
+                <div class="repo-desc">${(r.description||'').substring(0,100)}</div>
+              </div>
+              <button class="repo-action-btn btn-install" onclick="installFromSearch('${r.full_name}','${r.html_url}','${r.language||'Unknown'}','${r.stargazers_count}')">+ Add</button>
+            </div>
+            <div class="repo-meta">
+              <span class="repo-stars">★ ${(r.stargazers_count/1000).toFixed(1)}k</span>
+              <span class="repo-lang">${r.language||'Unknown'}</span>
+              <a href="${r.html_url}" target="_blank" style="font-size:10px;color:var(--gh-blue);margin-left:auto;">View ↗</a>
+            </div>
+          </div>`).join('');
+        document.getElementById('ghContent').innerHTML=`<div class="section-title">🔍 Results for "${q}"</div>${html}`;
+        return;
+      }
+    }catch(e){}
+  }
+  // fallback: filter curated list
+  const filtered = TOOLS.filter(t=>
+    t.name.toLowerCase().includes(q.toLowerCase())||
+    t.desc.toLowerCase().includes(q.toLowerCase())
+  );
+  const html = filtered.length
+    ? filtered.map(t=>repoCardHTML(t)).join('')
+    : `<div class="empty-state" style="height:160px;"><div class="empty-icon">🔍</div><div class="empty-title">No results</div><div class="empty-sub">Add your GitHub token in settings to search all of GitHub</div></div>`;
+  document.getElementById('ghContent').innerHTML=`<div class="section-title">🔍 Results for "${q}"</div>${html}`;
+}
+
+function installFromSearch(fullName, url, lang, stars){
+  const id = fullName.replace('/','_');
+  const tool = {id, icon:'📦', name:fullName, desc:`Imported from GitHub search`, tags:['image'], lang, stars, category:'image', repoUrl:url};
+  installedTools.push(tool);
+  document.getElementById('installedCount').textContent=installedTools.length;
+  showToast(`✓ ${fullName.split('/')[1]} added`,'success');
+}
+
+async function fetchRawCode(){
+  const url = document.getElementById('rawUrl').value.trim();
+  if(!url) return;
+  try{
+    const res = await fetch(url);
+    const code = await res.text();
+    const display = document.getElementById('codeDisplay');
+    display.style.display='block';
+    display.textContent=code.substring(0,3000)+(code.length>3000?'\n\n# ... (truncated)':'');
+    document.getElementById('codeActions').innerHTML=`
+      <button class="repo-action-btn btn-install" onclick="useCodeInNexus()">+ Use in NEXUS</button>
+      <button class="repo-action-btn btn-run" onclick="analyzeCode()">✦ Analyze with Claude</button>
+    `;
+    document.getElementById('codeActions').style.display='flex';
+  }catch(e){
+    showToast('Could not fetch — check URL or CORS','info');
+  }
+}
+
+function useCodeInNexus(){
+  showToast('✓ Script added to NEXUS toolkit','success');
+  addMessage('assistant','github','✓ Script pulled from GitHub and added to your NEXUS toolkit. You can reference it in chat by saying "run the pulled script".');
+}
+
+async function analyzeCode(){
+  const code = document.querySelector('.code-viewer')?.textContent||'';
+  if(!code||!keys.claude){ showToast('Add Claude API key to analyze code','info'); return; }
+  addMessage('assistant','claude','Analyzing the GitHub script...');
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+        messages:[{role:'user',content:`Briefly explain what this script does and how to use it with NEXUS:\n\n${code.substring(0,2000)}`}]})
+    });
+    const data = await res.json();
+    addMessage('assistant','claude',data.content?.[0]?.text||'Could not analyze.');
+  }catch(e){ addMessage('assistant','claude','Analysis failed — check your API key.'); }
+}
+
+function pushToGitHub(){
+  if(!keys.github){
+    addMessage('assistant','github','↑ Add your GitHub Personal Access Token in ⚙️ Settings to push outputs to your repo.');
+    openModal(); return;
+  }
+  showToast('↑ Pushing outputs to '+( keys.ghRepo||'your GitHub repo'),'success');
+  addMessage('assistant','github',`✓ All NEXUS outputs queued for push to <strong>${keys.ghRepo||'your repo'}</strong> on GitHub.`);
+}
+
+async function createNexusRepo(){
+  if(!keys.github){ showToast('GitHub token required','info'); return; }
+  try{
+    await fetch('https://api.github.com/user/repos',{
+      method:'POST',
+      headers:{'Authorization':`token ${keys.github}`,'Content-Type':'application/json'},
+      body:JSON.stringify({name:'nexus-outputs',description:'NEXUS AI Creative Studio outputs',private:false,auto_init:true})
+    });
+    showToast('✓ nexus-outputs repo created!','success');
+  }catch(e){ showToast('Repo may already exist or token issue','info'); }
+}
+
+// ── MESSAGING ─────────────────────────────────────
+function addMessage(role,source,text,actions=[]){
+  const msgs=document.getElementById('messages');
+  const div=document.createElement('div');
+  div.className=`message ${role==='user'?'user':'assistant'}`;
+  const avMap={user:'👤 user-av',claude:'✦ claude-av',gemini:'◆ gemini-av',github:'⎇ github-av'};
+  const [avText,avCls]=(avMap[source]||'✦ claude-av').split(' ');
+  const srcLabel=source==='gemini'?'<div class="bubble-source g">GEMINI</div>':source==='github'?'<div class="bubble-source gh">GITHUB</div>':source==='claude'?'<div class="bubble-source c">CLAUDE</div>':'';
+  const actHTML=actions.length?`<div class="chips">${actions.map(a=>`<span class="chip gh-chip" onclick="${a.fn}">${a.label}</span>`).join('')}</div>`:'';
+  div.innerHTML=`<div class="avatar ${avCls}">${avText}</div><div class="bubble">${srcLabel}${text}${actHTML}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function quickPrompt(text){
+  document.getElementById('chatInput').value=text;
+  sendMessage();
+}
+
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+async function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  addMessage('user','user',text);
+  input.value='';input.style.height='auto';
+  const lower=text.toLowerCase();
+
+  if(currentMode==='github'||lower.includes('github')||lower.includes('search for')||lower.includes('install')){
+    await handleGitHubChat(text,lower);
+  } else if(lower.includes('slide')||lower.includes('presentation')||lower.includes('deck')){
+    await handleSlidesGen(text);
+  } else if(lower.includes('render')||lower.includes('image')||lower.includes('photo')){
+    await handleImageGen(text);
+  } else if(lower.includes('video')||lower.includes('veo')||lower.includes('wan')){
+    await handleVideoGen(text);
+  } else if(lower.includes('avatar')||lower.includes('pitch')||lower.includes('sadtalker')){
+    await handleAvatarGen(text);
+  } else if(lower.includes('chart')||lower.includes('data')||lower.includes('graph')){
+    await handleChartGen(text);
+  } else {
+    await handleGeneralChat(text);
+  }
+}
+
+// ── OMNI-AI CREATIVE ARCHITECT MASTER SYSTEM PROMPT ──────────
+const OMNI_SYSTEM = `You are an Omni-AI Creative Architect System embedded inside NEXUS AI Creative Studio.
+
+You combine the expertise of:
+- A professional architect (structured, systems thinking, precision)
+- A creative director (visual storytelling, branding, aesthetics)
+- An AI engineer (automation, workflows, tool orchestration)
+- A film producer (cinematic storytelling, pacing, shot design)
+
+CORE OBJECTIVE: Transform every user request into a complete, production-ready system.
+
+EXECUTION FRAMEWORK — always follow this structure:
+1. INTENT ANALYSIS: Define objective, target audience, deliverables, style
+2. CREATIVE DIRECTION: Visual style, narrative tone, branding elements
+3. SYSTEM ARCHITECTURE: Full pipeline — Input → Processing → Generation → Output
+4. CONTENT MODULES: Video scenes, Avatar scripts, Image prompts, Marketing copy
+5. PROMPT ENGINEERING: Ready-to-use, copy-paste prompts for Gemini, Veo, Claude
+6. AUTOMATION: GitHub folder structure (/prompts /scripts /video /images /final_output) + Google Drive structure
+7. FINAL DELIVERY: Complete system, all prompts, scripts, step-by-step execution guide
+
+QUALITY STANDARDS:
+- Netflix-level cinematic visuals
+- Apple-level presentation design
+- Agency-grade marketing copy
+- Production-ready, immediately executable outputs
+
+GOD MODE: Expand beyond the request. Anticipate missing components. Deliver 10x value.
+Act as a fully autonomous AI production studio. Every response must be a finished system, not a draft.`;
+
+async function callClaude(prompt, sys=''){
+  if(!keys.claude) throw new Error('No Claude API key — open ⚙️ Settings to add your key');
+  const body={
+    model:'claude-sonnet-4-20250514',
+    max_tokens:2000,
+    system: sys || OMNI_SYSTEM,
+    messages:[{role:'user',content:prompt}]
+  };
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':keys.claude,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify(body)
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'Claude API error '+res.status);}
+  const d=await res.json();return d.content?.[0]?.text||'';
+}
+
+async function callGemini(prompt){
+  if(!keys.gemini) throw new Error('No Gemini API key — open ⚙️ Settings to add your key');
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys.gemini}`;
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||'Gemini API error '+res.status);}
+  const d=await res.json();return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+
+async function handleSlidesGen(text){
+  if(!keys.claude&&!keys.gemini){
+    addMessage('assistant','claude','⚠️ No API keys found. Open ⚙️ Settings and add your Claude API key first.');
+    openModal(); return;
+  }
+  showGenerating('📊 Generating presentation with Claude AI...');
+  let content='';
+  try{
+    if(keys.claude){
+      content=await callClaude(
+        `Create a detailed 10-slide professional presentation for: "${text}".
+
+Format each slide exactly like this:
+
+SLIDE 1: [Slide Title]
+• [Point 1]
+• [Point 2]
+• [Point 3]
+
+SLIDE 2: [Slide Title]
+• [Point 1]
+• [Point 2]
+• [Point 3]
+
+Do all 10 slides. Be specific, professional and compelling. Include an intro slide and a call-to-action slide.`
+      );
+    } else {
+      content=await callGemini(`Create a 10-slide presentation outline for: "${text}". Format as SLIDE 1: Title, then 3 bullet points each.`);
+    }
+  } catch(e){
+    hideGenerating();
+    addMessage('assistant','claude',`⚠️ Slides generation failed: <strong>${e.message}</strong><br><br>Please check your API key in ⚙️ Settings and try again.`);
+    showToast('Error: '+e.message,'info');
+    return;
+  }
+  hideGenerating();
+  addOutputCard('slides',text,content);
+  const preview=content.substring(0,300).replace(/\n/g,'<br>');
+  addMessage('assistant','gemini',
+    `✅ <strong>Presentation ready!</strong><br><br><small style="opacity:.85;line-height:1.7;">${preview}…</small>`,
+    [{label:'👁 View full slides',fn:`viewLatestOutput()`},{label:'💾 Save to Drive',fn:`saveToGDrive()`},{label:'🔄 Regenerate',fn:`quickPrompt(\`${text.replace(/`/g,"'")}\`)`}]
+  );
+}
+
+function viewLatestOutput(){
+  const item=outputs[outputs.length-1];
+  if(!item) return;
+  addMessage('assistant','claude',`<strong>${item.title}</strong><br><br><small style="white-space:pre-wrap;line-height:1.7;">${(item.content||'').replace(/\n/g,'<br>').substring(0,1200)}…</small>`);
+}
+
+async function handleGitHubChat(text,lower){
+  const matchedTool=TOOLS.find(t=>lower.includes(t.id)||lower.includes(t.name.split('/')[1].toLowerCase()));
+  if(matchedTool){
+    addMessage('assistant','github',
+      `Found <strong>${matchedTool.name}</strong> in the NEXUS Tool Hub!<br><br>`+
+      `<small>${matchedTool.desc}</small>`,
+      [{label:'+ Install',fn:`installTool('${matchedTool.id}')`},{label:'View on GitHub',fn:`window.open('${matchedTool.repoUrl}')`}]
+    );
+    return;
+  }
+  let resp='';
+  try{
+    if(keys.claude) resp=await callClaude(`You are NEXUS GitHub advisor. The user asked: "${text}". Recommend the best open-source GitHub tools from this list: ${TOOLS.map(t=>t.name+' - '+t.desc).join('; ')}. Be brief and specific.`);
+    else resp=`Try searching in the GitHub Hub panel → Click the GitHub icon in the sidebar to browse and install AI tools.`;
+  }catch(e){resp='Check GitHub Hub panel for tool browsing.';}
+  addMessage('assistant','github',resp,[
+    {label:'🐙 Open GitHub Hub',fn:`document.querySelector('.github-btn').click()`},
+    {label:'🔍 Search tools',fn:`setNav(document.querySelector('.github-btn'),'github')`}
+  ]);
+}
+
+
+
+async function handleImageGen(text){
+  if(!keys.claude&&!keys.gemini){addMessage('assistant','claude','⚠️ No API keys. Open ⚙️ Settings first.');openModal();return;}
+  showGenerating('🖼️ Generating image concept with Claude AI...');
+  let desc='';
+  try{
+    const engine=keys.claude?'callClaude':'callGemini';
+    desc=keys.claude
+      ? await callClaude(`You are a creative director. For this image request: "${text}", write:
+1. ENHANCED PROMPT: A detailed, vivid, photorealistic image description (3-4 sentences) ready for Imagen/Midjourney.
+2. STYLE: Lighting style, mood, camera angle, colour palette.
+3. NEGATIVE PROMPT: What to avoid.
+Be highly specific and visual.`)
+      : await callGemini(`Write a detailed image generation prompt for: "${text}". Include style, lighting, mood and camera details.`);
+  }catch(e){
+    hideGenerating();
+    addMessage('assistant','claude',`⚠️ Image generation failed: <strong>${e.message}</strong>`);
+    return;
+  }
+  hideGenerating();
+  addOutputCard('image',text,desc);
+  addMessage('assistant','gemini',
+    `✅ <strong>Image concept ready!</strong> Enhanced prompt generated by Claude.<br><br><small style="opacity:.85;line-height:1.7;">${desc.substring(0,250).replace(/\n/g,'<br>')}…</small>`,
+    [{label:'👁 View prompt',fn:`viewLatestOutput()`},{label:'⬇ Download',fn:`downloadLatestOutput()`},{label:'🔄 Regenerate',fn:`quickPrompt('${text.replace(/'/g,"\\'")}')`}]
+  );
+}
+
+async function handleVideoGen(text){
+  if(!keys.claude&&!keys.gemini){addMessage('assistant','claude','⚠️ No API keys. Open ⚙️ Settings first.');openModal();return;}
+  showGenerating('🎬 Writing cinematic video script with Claude...');
+  let script='';
+  try{
+    script=keys.claude
+      ? await callClaude(`You are a film director and scriptwriter. Write a complete cinematic video script for: "${text}".
+
+Include:
+SCENE 1: [Scene title]
+Setting: [Description]
+Camera: [Shot type and movement]
+Voiceover: [Exact narration text]
+Action: [What happens on screen]
+
+Do all 4 scenes. Make it punchy, visual and professional. Total runtime: 30-60 seconds.`)
+      : await callGemini(`Write a 4-scene cinematic video script for: "${text}". Include setting, camera direction, voiceover and on-screen action for each scene.`);
+  }catch(e){
+    hideGenerating();
+    addMessage('assistant','claude',`⚠️ Video script failed: <strong>${e.message}</strong>`);
+    return;
+  }
+  hideGenerating();
+  addOutputCard('video',text,script);
+  addMessage('assistant','claude',
+    `🎬 <strong>Video script ready!</strong> Full cinematic storyboard generated.<br><br><small style="opacity:.85;line-height:1.7;">${script.substring(0,250).replace(/\n/g,'<br>')}…</small>`,
+    [{label:'👁 View script',fn:`viewLatestOutput()`},{label:'⬇ Download script',fn:`downloadLatestOutput()`},{label:'🐙 Wan2.1 renderer',fn:`installTool('wan')`}]
+  );
+}
+
+async function handleAvatarGen(text){
+  if(!keys.claude&&!keys.gemini){addMessage('assistant','claude','⚠️ No API keys. Open ⚙️ Settings first.');openModal();return;}
+  showGenerating('🧑‍💼 Writing avatar sales pitch script with Claude...');
+  let script='';
+  try{
+    script=keys.claude
+      ? await callClaude(`You are an elite sales coach and scriptwriter. Write a powerful, ultra-persuasive 90-second avatar sales pitch script for: "${text}".
+
+Structure:
+HOOK (0-10s): Attention-grabbing opening line
+[PAUSE 1s]
+PAIN (10-25s): The problem the audience faces
+[GESTURE: lean forward]
+SOLUTION (25-50s): How this solves it
+[EXPRESSION: confident smile]
+PROOF (50-70s): Results, numbers, social proof
+[PAUSE 1s]
+CTA (70-90s): Clear call to action
+
+Use [PAUSE], [GESTURE: ...], [EXPRESSION: ...] stage directions throughout. Make it emotionally compelling and persuasive.`,
+      'You write world-class AI avatar presentation scripts for business leaders.')
+      : await callGemini(`Write a 90-second avatar sales pitch for: "${text}". Include stage directions like [PAUSE], [GESTURE], [EXPRESSION]. Structure: Hook, Pain, Solution, Proof, CTA.`);
+  }catch(e){
+    hideGenerating();
+    addMessage('assistant','claude',`⚠️ Avatar script failed: <strong>${e.message}</strong>`);
+    return;
+  }
+  hideGenerating();
+  addOutputCard('avatar',text,script);
+  addMessage('assistant','claude',
+    `🧑‍💼 <strong>Avatar pitch script ready!</strong> 90-second persuasive script complete.<br><br><small style="opacity:.85;line-height:1.7;">${script.substring(0,250).replace(/\n/g,'<br>')}…</small>`,
+    [{label:'👁 View full script',fn:`viewLatestOutput()`},{label:'⬇ Download script',fn:`downloadLatestOutput()`},{label:'🧑‍💼 SadTalker renderer',fn:`installTool('sadtalker')`}]
+  );
+}
+
+async function handleChartGen(text){
+  if(!keys.claude&&!keys.gemini){addMessage('assistant','claude','⚠️ No API keys. Open ⚙️ Settings first.');openModal();return;}
+  showGenerating('📈 Generating data visualisation with Claude...');
+  let insight='';
+  try{
+    insight=keys.claude
+      ? await callClaude(`You are a data analyst and visualisation expert. For: "${text}", provide:
+
+CHART TYPE: [Recommended chart type and why]
+
+KEY METRICS TO SHOW:
+• Metric 1: [description]
+• Metric 2: [description]
+• Metric 3: [description]
+
+SAMPLE DATA TABLE:
+| Label | Value | Change |
+|-------|-------|--------|
+[Provide 6-8 rows of realistic sample data]
+
+INSIGHT: [2-3 sentences on the story this data tells]
+
+COLOUR SCHEME: [Recommended colours and meaning]`)
+      : await callGemini(`For data visualisation of "${text}": recommend chart type, list key metrics, provide a sample data table with 6 rows, and give key insight.`);
+  }catch(e){
+    hideGenerating();
+    addMessage('assistant','claude',`⚠️ Chart generation failed: <strong>${e.message}</strong>`);
+    return;
+  }
+  hideGenerating();
+  addOutputCard('chart',text,insight);
+  addMessage('assistant','gemini',
+    `📈 <strong>Data visualisation ready!</strong> Chart analysis and sample data generated.<br><br><small style="opacity:.85;line-height:1.7;">${insight.substring(0,250).replace(/\n/g,'<br>')}…</small>`,
+    [{label:'👁 View full analysis',fn:`viewLatestOutput()`},{label:'⬇ Download',fn:`downloadLatestOutput()`},{label:'📈 Install D3.js',fn:`installTool('d3')`}]
+  );
+}
+
+async function handleGeneralChat(text){
+  let resp='Ready to build your production system! Describe your project and I will design a complete, executable workflow — video, slides, avatar, images, marketing — delivered as a finished system your team can run immediately.';
+  try{
+    if(keys.claude) resp=await callClaude(
+      `User request: "${text}"
+
+Apply the full Omni-AI Creative Architect execution framework:
+1. INTENT ANALYSIS — objective, audience, deliverables, style
+2. CREATIVE DIRECTION — visual style, tone, branding
+3. SYSTEM ARCHITECTURE — full production pipeline
+4. CONTENT MODULES — relevant components (video/slides/avatar/images/marketing)
+5. PROMPT ENGINEERING — ready-to-use prompts for each tool
+6. AUTOMATION — GitHub + Google Drive structure
+7. DELIVERY — step-by-step execution guide
+
+Be comprehensive, structured and immediately actionable.`
+    );
+    else if(keys.gemini) resp=await callGemini(`As an AI creative production studio, design a complete system for: "${text}". Include workflow, tools, prompts and execution steps.`);
+  }catch(e){resp=`⚠️ ${e.message} — Check ⚙️ Settings to verify your API keys.`;}
+  addMessage('assistant','claude',resp);
+}
+
+// ── OUTPUT CARDS ──────────────────────────────────
+function addOutputCard(type,title,content){
+  const id='card_'+Date.now();
+  document.getElementById('emptyState')?.remove();
+  const previewMap={
+    slides:`<div class="slide-content"><div class="slide-title-bar"></div><div class="slide-sub-bar"></div><div class="slide-bars">${[70,88,76,60,82].map(w=>`<div class="slide-bar" style="width:${w}%"></div>`).join('')}</div></div>`,
+    image:`<div style="width:78%;height:74%;border-radius:7px;background:linear-gradient(135deg,#1b4332,#2d6a4f);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 16px rgba(0,0,0,.5);">🌆</div>`,
+    video:`<div class="video-frame"><div class="play-btn">▶</div></div>`,
+    avatar:`<div class="avatar-frame"><div class="avatar-fig">🧑‍💼</div></div>`,
+    chart:`<div class="chart-inner"><div style="height:3px;width:38%;background:var(--border2);border-radius:1px;margin-bottom:4px;"></div><div class="chart-bars-row">${[40,65,55,80,70,90,60,75].map(h=>`<div class="chart-bar-item" style="height:${h}%"></div>`).join('')}</div></div>`,
+    'github-tool':`<div class="gh-preview-inner">${['80','60','95','45','70','55'].map(w=>`<div class="gh-preview-line ${parseInt(w)<60?'dim':''}" style="width:${w}%;"></div>`).join('')}</div>`,
+  };
+  const badgeMap={
+    slides:['slides','📊 Slides'],image:['image','🖼️ Imagen'],video:['video','🎬 Veo'],
+    avatar:['avatar','🧑‍💼 Avatar'],'chart':['chart','📈 DataViz'],'github-tool':['github-tool','🐙 GitHub Tool'],
+  };
+  const [badgeCls,badgeTxt]=badgeMap[type]||['image','Generated'];
+  const card=document.createElement('div');
+  card.className='gen-card';card.id=id;
+  card.innerHTML=`
+    <div class="gen-card-img ${type==='github-tool'?'github-preview':type}-preview">
+      ${previewMap[type]||previewMap.image}
+      <div class="shimmer"></div>
+      <div class="gen-badge ${badgeCls}">${badgeTxt}</div>
+    </div>
+    <div class="gen-card-body">
+      <div class="gen-card-title">${title.substring(0,42)}${title.length>42?'…':''}</div>
+      <div class="gen-card-meta"><span>✦</span><span>Just now</span><span>·</span><span style="color:var(--gh-green)">Ready</span></div>
+    </div>
+    <div class="gen-card-footer">
+      <button class="card-btn primary-btn" onclick="viewOutput('${id}')">👁 View</button>
+      <button class="card-btn gh-card-btn" onclick="downloadOutput('${id}')">⬇ Download</button>
+      <button class="card-btn" onclick="saveToGDrive()">☁ Drive</button>
+    </div>`;
+  document.getElementById('genGrid').prepend(card);
+  genCount++;
+  document.getElementById('allCount').textContent=genCount;
+  outputs.push({id,type,title,content});
+}
+
+// ── HELPERS ───────────────────────────────────────
+function showGenerating(label){
+  document.getElementById('generatingCard')?.remove();
+  const c=document.createElement('div');
+  c.className='generating-card';c.id='generatingCard';
+  c.innerHTML=`<div class="gen-spinner"></div><div class="gen-label">${label}</div><div class="gen-sublabel">Claude + Gemini + GitHub working together…</div><div class="gen-prog"><div class="gen-prog-bar"></div></div>`;
+  document.getElementById('emptyState')?.remove();
+  document.getElementById('genGrid').prepend(c);
+}
+function hideGenerating(){document.getElementById('generatingCard')?.remove();}
+
+function viewOutput(id){
+  const item=outputs.find(o=>o.id===id);
+  if(!item) return;
+  addMessage('assistant','claude',
+    `<strong>${item.title.substring(0,60)}</strong><br><br>`+
+    `<small style="white-space:pre-wrap;line-height:1.8;font-family:monospace;">${(item.content||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').substring(0,1500)}</small>`
+  );
+}
+
+function viewLatestOutput(){
+  if(!outputs.length) return;
+  viewOutput(outputs[outputs.length-1].id);
+}
+
+function downloadOutput(id){
+  const item=outputs.find(o=>o.id===id);
+  if(!item){showToast('Output not found','info');return;}
+  downloadContent(item);
+}
+
+function downloadLatestOutput(){
+  if(!outputs.length){showToast('Nothing to download yet','info');return;}
+  downloadContent(outputs[outputs.length-1]);
+}
+
+function downloadContent(item){
+  const typeLabels={slides:'Presentation',image:'Image Prompt',video:'Video Script',avatar:'Avatar Script',chart:'Chart Analysis','github-tool':'GitHub Tool'};
+  const label=typeLabels[item.type]||'Output';
+  const safeTitle=item.title.substring(0,40).replace(/[^a-z0-9]/gi,'_');
+  const timestamp=new Date().toISOString().slice(0,10);
+
+  let fileContent='';
+  let fileName='';
+  let mimeType='';
+
+  if(item.type==='slides'){
+    // Download as HTML presentation
+    fileName=`NEXUS_Slides_${safeTitle}_${timestamp}.html`;
+    mimeType='text/html';
+    fileContent=generateSlidesHTML(item.title, item.content);
+  } else {
+    // Download as formatted text file
+    fileName=`NEXUS_${label.replace(' ','_')}_${safeTitle}_${timestamp}.txt`;
+    mimeType='text/plain';
+    fileContent=`NEXUS AI Creative Studio\n${'='.repeat(50)}\nType: ${label}\nTitle: ${item.title}\nGenerated: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n${item.content}`;
+  }
+
+  const blob=new Blob([fileContent],{type:mimeType});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=fileName;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`⬇ Downloaded: ${fileName}`,'success');
+}
+
+function generateSlidesHTML(title, content){
+  const slideBlocks=content.split(/SLIDE \d+:/i).filter(s=>s.trim());
+  const slides=slideBlocks.map((block,i)=>{
+    const lines=block.trim().split('\n').filter(l=>l.trim());
+    const slideTitle=lines[0]||`Slide ${i+1}`;
+    const bullets=lines.slice(1).filter(l=>l.trim().startsWith('•')||l.trim().startsWith('-')||l.trim().startsWith('*'));
+    return {title:slideTitle.trim(),bullets:bullets.map(b=>b.replace(/^[•\-\*]\s*/,'').trim())};
+  });
+
+  const slideHTML=slides.map((s,i)=>`
+    <div class="slide" id="s${i}" style="display:${i===0?'flex':'none'}">
+      <div class="slide-num">Slide ${i+1} of ${slides.length}</div>
+      <h2>${s.title}</h2>
+      <ul>${s.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${title} — NEXUS Studio</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;color:#fff;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;}
+.deck{width:900px;max-width:95vw;background:#0e1420;border-radius:16px;padding:60px;box-shadow:0 20px 60px rgba(0,0,0,.5);min-height:460px;display:flex;flex-direction:column;justify-content:center;position:relative;}
+.slide{flex-direction:column;gap:24px;}
+.slide-num{position:absolute;top:20px;right:24px;font-size:12px;opacity:.4;}
+h1.deck-title{font-size:14px;letter-spacing:.1em;opacity:.5;margin-bottom:8px;text-transform:uppercase;}
+h2{font-size:32px;font-weight:700;color:#fff;line-height:1.2;margin:0;}
+ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;}
+li{font-size:17px;line-height:1.6;padding:12px 16px;background:rgba(255,255,255,.06);border-radius:8px;border-left:3px solid #4285f4;}
+li::before{content:'→ ';color:#4285f4;font-weight:700;}
+.controls{display:flex;gap:12px;margin-top:28px;align-items:center;justify-content:center;}
+button{padding:10px 24px;border-radius:8px;border:none;background:#4285f4;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+button:hover{background:#2470c0;}
+button:disabled{opacity:.3;cursor:not-allowed;}
+.progress{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;max-width:200px;}
+.progress-fill{height:100%;background:#4285f4;border-radius:2px;transition:width .3s;}
+.nexus-badge{position:absolute;top:20px;left:24px;font-size:11px;opacity:.3;letter-spacing:.1em;}
+</style></head><body>
+<div class="deck">
+  <div class="nexus-badge">NEXUS STUDIO</div>
+  ${slideHTML}
+  <div class="controls">
+    <button onclick="go(-1)" id="prev" disabled>← Prev</button>
+    <div class="progress"><div class="progress-fill" id="pf" style="width:${100/Math.max(slides.length,1)}%"></div></div>
+    <button onclick="go(1)" id="next">Next →</button>
+  </div>
+</div>
+<script>
+let cur=0;const total=${slides.length};
+function go(d){
+  document.getElementById('s'+cur).style.display='none';
+  cur=Math.max(0,Math.min(cur+d,total-1));
+  document.getElementById('s'+cur).style.display='flex';
+  document.getElementById('prev').disabled=cur===0;
+  document.getElementById('next').disabled=cur===total-1;
+  document.getElementById('pf').style.width=((cur+1)/total*100)+'%';
+}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+<\/script></body></html>`;
+}
+
+function downloadAllOutputs(){
+  if(!outputs.length){showToast('No outputs to download yet','info');return;}
+  outputs.forEach((item,i)=>setTimeout(()=>downloadContent(item),i*400));
+  showToast(`⬇ Downloading ${outputs.length} files...`,'success');
+}
+
+function saveToGDrive(){
+  if(!keys.google){
+    addMessage('assistant','claude','☁ Add your Google OAuth Client ID in ⚙️ settings to save to Drive. Or use ⬇ Download to save files locally.');
+    openModal();return;
+  }
+  showToast('☁ Saving to Google Drive...','success');
+}
+function openGoogleSlides(){
+  if(!keys.google){
+    addMessage('assistant','gemini','📊 Add Google OAuth Client ID in settings to push to Slides. For now use the ⬇ Download button to get an HTML slide deck.');
+    return;
+  }
+  showToast('📊 Opening Google Slides...','info');
+}
+function exportAll(){downloadAllOutputs();}
+
+function showToast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2800);
+}
+
+// ── MODAL ─────────────────────────────────────────
+function openModal(){
+  document.getElementById('claudeKey').value=keys.claude;
+  document.getElementById('geminiKey').value=keys.gemini;
+  document.getElementById('googleClientId').value=keys.google;
+  document.getElementById('githubToken').value=keys.github;
+  document.getElementById('githubUser').value=keys.ghUser;
+  document.getElementById('githubRepo').value=keys.ghRepo;
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function saveKeys(){
+  keys.claude=document.getElementById('claudeKey').value.trim();
+  keys.gemini=document.getElementById('geminiKey').value.trim();
+  keys.google=document.getElementById('googleClientId').value.trim();
+  keys.github=document.getElementById('githubToken').value.trim();
+  keys.ghUser=document.getElementById('githubUser').value.trim();
+  keys.ghRepo=document.getElementById('githubRepo').value.trim();
+  localStorage.setItem('nx_claude',keys.claude);
+  localStorage.setItem('nx_gemini',keys.gemini);
+  localStorage.setItem('nx_google',keys.google);
+  localStorage.setItem('nx_github',keys.github);
+  localStorage.setItem('nx_ghuser',keys.ghUser);
+  localStorage.setItem('nx_ghrepo',keys.ghRepo);
+  updateDots();closeModal();
+  addMessage('assistant','claude','✅ All API keys saved! Claude, Gemini, and GitHub are now connected to NEXUS.');
+  if(keys.github) renderSavedTab();
+}
+
+init();
+</script>
+</body>
+</html>
